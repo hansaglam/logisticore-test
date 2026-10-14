@@ -873,14 +873,27 @@ function MapV2GeographicCanvasInner(
     }
   }, [roadPaintRev, roadChunkIds, roadFade]);
 
+  const previousViewport = useRef({ width: 0, height: 0 });
   useEffect(() => {
     vw.value = viewport.width;
     vh.value = viewport.height;
-    if (viewport.width > 0 && !fittedRef.current) {
+    if (viewport.width <= 0 || viewport.height <= 0) return;
+    const previous = previousViewport.current;
+    if (!fittedRef.current) {
       applyHome(false);
       fittedRef.current = true;
+    } else if (previous.width > 0 && previous.height > 0 &&
+      (previous.width !== viewport.width || previous.height !== viewport.height)) {
+      // Rotation/panel resizing keeps the geographic center and relative zoom.
+      const ratio = Math.min(viewport.width / previous.width, viewport.height / previous.height);
+      applyCamera({
+        scale: scale.value * ratio,
+        translateX: viewport.width / 2 - (previous.width / 2 - translateX.value) * ratio,
+        translateY: viewport.height / 2 - (previous.height / 2 - translateY.value) * ratio,
+      }, false);
     }
-  }, [applyHome, vh, viewport.height, viewport.width, vw]);
+    previousViewport.current = viewport;
+  }, [applyCamera, applyHome, scale, translateX, translateY, vh, viewport, vw]);
 
   const cameraTransform = useDerivedValue(() => [
     { translateX: translateX.value },

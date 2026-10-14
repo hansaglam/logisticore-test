@@ -165,7 +165,7 @@ export default function RoadsideFuelSheet({
   if (!shownRef.current) return null;
   if (!job || !truck) {
     return (
-      <Modal
+      <Modal supportedOrientations={['portrait', 'landscape-left', 'landscape-right']}
         visible={visible}
         transparent
         animationType="slide"
@@ -177,7 +177,7 @@ export default function RoadsideFuelSheet({
   }
 
   return (
-    <Modal
+    <Modal supportedOrientations={['portrait', 'landscape-left', 'landscape-right']}
       visible={visible}
       transparent
       animationType="slide"

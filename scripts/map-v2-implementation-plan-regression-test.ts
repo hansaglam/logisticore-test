@@ -67,7 +67,12 @@ assert(budgets.includes('TARGET_INTERACTION_FPS'), 'fps target named');
 assert(budgets.includes('MINIMUM_ACCEPTABLE_FPS'), 'min fps named');
 assert(budgets.includes('provisional'), 'budgets marked provisional');
 
-assert(read('app.json').includes('"orientation": "portrait"'), 'portrait unchanged');
+// MAP-01 supersedes the portrait-only native restriction; startup remains portrait.
+const orientationConfig = JSON.parse(read('app.json')).expo;
+assert(orientationConfig.orientation === 'default', 'native supports route-owned landscape');
+assert(orientationConfig.plugins.some((plugin: unknown) =>
+  Array.isArray(plugin) && plugin[0] === 'expo-screen-orientation' && plugin[1]?.initialOrientation === 'PORTRAIT_UP'),
+  'normal startup remains portrait');
 
 console.log(`\nPASS: ${pass}`);
 console.log(`FAIL: ${fail}`);

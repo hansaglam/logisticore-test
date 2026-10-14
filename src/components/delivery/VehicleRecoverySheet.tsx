@@ -82,7 +82,7 @@ export default function VehicleRecoverySheet() {
   };
 
   return (
-    <Modal visible transparent animationType="fade" onRequestClose={close}>
+    <Modal supportedOrientations={['portrait', 'landscape-left', 'landscape-right']} visible transparent animationType="fade" onRequestClose={close}>
       <View style={styles.overlay}>
         <Pressable style={styles.backdrop} onPress={close} />
         <View style={styles.sheet}>

@@ -27,7 +27,7 @@ export default function DeliveryResultSheet({
   const negative = record.reputationDelta < 0;
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
+    <Modal supportedOrientations={['portrait', 'landscape-left', 'landscape-right']} visible={visible} transparent animationType="fade" onRequestClose={onDismiss}>
       <Pressable style={styles.overlay} onPress={onDismiss}>
         <Pressable style={styles.sheet} onPress={() => {}}>
           <Text style={styles.kicker}>{routeLabel}</Text>

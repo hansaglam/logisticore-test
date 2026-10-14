@@ -4,7 +4,7 @@
  * Back contract:
  * - COUNTRY → WORLD, restoring the previous world camera when captured
  * - WORLD with a selection → deselect
- * - WORLD with no selection → close this experience (Simülasyon Testi), not the app
+ * - WORLD with no selection → close to Ana (diagnostics return to their caller)
  * Android hardwareBackPress follows the same stack.
  */
 import React, { useCallback, useEffect, useMemo, useRef, useState } from 'react';
@@ -14,6 +14,7 @@ import {
   BackHandler,
   Easing,
   Pressable,
+  ScrollView,
   StyleSheet,
   Text,
   useWindowDimensions,
@@ -89,6 +90,14 @@ import MapV2CountryModeTabs, { type CountryModeTab } from './MapV2CountryModeTab
 import MapV2CountryOverviewShell from './MapV2CountryOverviewShell';
 import MapV2CountrySelectionPanel from './MapV2CountrySelectionPanel';
 
+function LandscapeMapPanels({ landscape, height, children }: {
+  landscape: boolean; height: number; children: React.ReactNode;
+}) {
+  return landscape
+    ? <ScrollView style={{ flexShrink: 1, maxHeight: height * 0.32 }}>{children}</ScrollView>
+    : <>{children}</>;
+}
+
 type Props = {
   onClose: () => void;
   cityProgressionMode?: MapV2CityProgressionMode;
@@ -103,7 +112,8 @@ export default function MapV2WorldScreen({
   cityProgressionMode = MAP_V2_CITY_PROGRESSION_DEFAULT_MODE,
 }: Props) {
   const { contentBottomPadding } = useTabBarLayout();
-  const { width: windowWidth } = useWindowDimensions();
+  const { width: windowWidth, height: windowHeight } = useWindowDimensions();
+  const landscape = windowWidth > windowHeight;
   const compactPhone = windowWidth < 360;
   const { showDialog } = useAppDialog();
   const canvasRef = useRef<MapV2GeographicCanvasHandle>(null);
@@ -522,6 +532,7 @@ export default function MapV2WorldScreen({
           styles.canvasWrap,
           mode === 'COUNTRY' && styles.canvasWrapCountry,
           mode === 'COUNTRY' && selectedCityId ? styles.canvasWrapCountrySelected : null,
+          landscape && { minHeight: 100 },
           mode === 'COUNTRY' && countryTab !== 'map' ? styles.canvasCollapsed : null,
         ]}
         pointerEvents={mode === 'COUNTRY' && countryTab !== 'map' ? 'none' : 'auto'}
@@ -583,6 +594,7 @@ export default function MapV2WorldScreen({
         />
         <Animated.View pointerEvents="none" style={[styles.fade, { opacity: fade, backgroundColor: MAP_V2_OCEAN }]} />
       </View>
+      <LandscapeMapPanels landscape={landscape && (mode === 'WORLD' || countryTab === 'map')} height={windowHeight}>
       {mode === 'COUNTRY' && __DEV__ ? (
         <View style={styles.devChips}>
           <Pressable
@@ -731,6 +743,7 @@ export default function MapV2WorldScreen({
           </View>
         </View>
       ) : null}
+      </LandscapeMapPanels>
     </View>
   );
 }

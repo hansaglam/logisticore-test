@@ -211,7 +211,7 @@ export default function AppDialog({
   };
 
   return (
-    <Modal
+    <Modal supportedOrientations={['portrait', 'landscape-left', 'landscape-right']}
       visible={visible}
       transparent
       animationType="fade"

@@ -629,7 +629,7 @@ function TruckRefuelSheetContent({
   }
 
   return (
-    <Modal
+    <Modal supportedOrientations={['portrait', 'landscape-left', 'landscape-right']}
       visible={visible}
       transparent
       animationType="slide"

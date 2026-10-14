@@ -1,4 +1,4 @@
-import React, { useCallback, useMemo, useRef, useState } from 'react';
+import React, { useCallback, useLayoutEffect, useMemo, useRef, useState } from 'react';
 import {
   InteractionManager,
   Platform,
@@ -42,6 +42,7 @@ function isMainTabKey(tab: TabKey): boolean {
 }
 
 interface GameTabBarProps {
+  onManagementVisibilityChange?: (visible: boolean) => void;
   tabs: TabDefinition[];
   activeTab: TabKey;
   onTabPress: (tab: TabKey) => void;
@@ -161,9 +162,14 @@ function GameTabBarContent({
   activeTab,
   onTabPress,
   onQuickAccess,
+  onManagementVisibilityChange,
 }: GameTabBarProps) {
-  const { safeBottom, totalBarHeight, tabBarBottom } = useTabBarLayout();
+  const { safeBottom, totalBarHeight, tabBarBottom, insets } = useTabBarLayout();
   const [quickAccessOpen, setQuickAccessOpen] = useState(false);
+  useLayoutEffect(() => {
+    onManagementVisibilityChange?.(quickAccessOpen);
+    return () => onManagementVisibilityChange?.(false);
+  }, [onManagementVisibilityChange, quickAccessOpen]);
   const managementNavLockRef = useRef(false);
   const badges = useTabBadges();
 
@@ -219,6 +225,8 @@ function GameTabBarContent({
             bottom: tabBarBottom,
             minHeight: totalBarHeight,
             paddingBottom: bottomPadding,
+            paddingLeft: insets.left,
+            paddingRight: insets.right,
           },
         ]}
       >

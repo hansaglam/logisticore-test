@@ -3,7 +3,7 @@
     "name": "LogistiCore",
     "slug": "logisticore",
     "version": "1.0.32",
-    "orientation": "portrait",
+    "orientation": "default",
     "userInterfaceStyle": "dark",
     "newArchEnabled": true,
     "icon": "./assets/branding/icon.png",
@@ -27,7 +27,10 @@
       "bundleIdentifier": "com.ethemsincar.logisticore",
       "buildNumber": "2",
       "supportsTablet": false,
+      "requireFullScreen": true,
       "infoPlist": {
+        "UISupportedInterfaceOrientations": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"],
+        "UISupportedInterfaceOrientations~ipad": ["UIInterfaceOrientationPortrait", "UIInterfaceOrientationPortraitUpsideDown", "UIInterfaceOrientationLandscapeLeft", "UIInterfaceOrientationLandscapeRight"],
         "NSAppTransportSecurity": {
           "NSAllowsArbitraryLoads": false
         },
@@ -44,6 +47,7 @@
     },
 
     "plugins": [
+      ["expo-screen-orientation", { "initialOrientation": "PORTRAIT_UP" }],
       "expo-notifications",
       [
         "expo-splash-screen",

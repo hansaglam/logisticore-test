@@ -9,7 +9,9 @@ import { ActivityIndicator, Platform, StyleSheet, Text, View } from 'react-nativ
 import { GestureHandlerRootView } from 'react-native-gesture-handler';
 import { StatusBar } from 'expo-status-bar';
 
-import { AppSafeAreaProvider } from './src/components/AppSafeAreaProvider';
+import { AppSafeAreaProvider, useAppSafeAreaInsets } from './src/components/AppSafeAreaProvider';
+import { resolveOrientationForRoute } from './src/domain/screenOrientationAuthority';
+import { useScreenOrientationController } from './src/hooks/useScreenOrientationController';
 import { AppDialogProvider } from './src/components/AppDialogProvider';
 import GameTabBar from './src/components/navigation/GameTabBar';
 import GameToast from './src/components/GameToast';
@@ -31,7 +33,7 @@ import { getBuildFingerprint, logBuildFingerprintOnce } from './src/config/build
 import { isInternalBuildProfile } from './src/config/buildProfile';
 
 import DashboardScreen from './src/screens/DashboardScreen';
-import MapScreen from './src/screens/MapScreen';
+import MapEntryScreen from './src/screens/MapEntryScreen';
 import ContractsScreen from './src/screens/ContractsScreen';
 import FleetScreen from './src/screens/FleetScreen';
 import ShopScreen from './src/screens/ShopScreen';
@@ -91,7 +93,7 @@ function renderActiveScreen(
     case 'dashboard':
       return <DashboardScreen onNavigate={onNavigate} onOpenWarehouse={onOpenWarehouse} />;
     case 'map':
-      return <MapScreen onOpenContracts={() => onNavigate('contracts')} />;
+      return <MapEntryScreen onClose={() => onNavigate('dashboard')} onOpenContracts={() => onNavigate('contracts')} />;
     case 'contracts':
       return <ContractsScreen />;
     case 'fleet':
@@ -156,9 +158,14 @@ function ActiveScreenFrame({
   return <View style={styles.screenContainer}>{children}</View>;
 }
 
-function AppShell({ isAppActive }: { isAppActive: boolean }) {
+function AppShell({ isAppActive, activeTab, setActiveTab, onManagementVisibilityChange }: {
+  isAppActive: boolean;
+  activeTab: TabKey;
+  setActiveTab: React.Dispatch<React.SetStateAction<TabKey>>;
+  onManagementVisibilityChange: (visible: boolean) => void;
+}) {
   useGameLoop(isAppActive);
-  const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
+  const insets = useAppSafeAreaInsets();
   const [visitedTabs, setVisitedTabs] = useState<Set<TabKey>>(() => new Set(['dashboard']));
   const [screenRetryKeys, setScreenRetryKeys] = useState<Partial<Record<TabKey, number>>>({});
   const transitionRef = useRef<{ from: TabKey; to: TabKey; startedAt: number } | null>(null);
@@ -318,7 +325,7 @@ function AppShell({ isAppActive }: { isAppActive: boolean }) {
 
   return (
     <View
-      style={styles.root}
+      style={[styles.root, activeTab === 'map' && { paddingLeft: insets.left, paddingRight: insets.right, paddingTop: insets.top }]}
       onTouchStart={() => {
         if (Platform.OS === 'android') {
           void enableImmersiveGameMode();
@@ -363,6 +370,7 @@ function AppShell({ isAppActive }: { isAppActive: boolean }) {
       />
       <VehicleRecoverySheet />
       <GameTabBar
+        onManagementVisibilityChange={onManagementVisibilityChange}
         tabs={MAIN_TABS}
         activeTab={activeTab}
         onTabPress={handleTabPress}
@@ -390,11 +398,17 @@ function GameLoadingScreen({ hint }: { hint: string }) {
 }
 
 export default function App() {
+  const [activeTab, setActiveTab] = useState<TabKey>('dashboard');
+  const [managementVisible, setManagementVisible] = useState(false);
   const isGameReady = useGameStore((state) => state.isGameReady);
   const { bootPhase, bootHint, recoveryProbe, handleRecoveryComplete } = useAppBootstrap();
   useNativeAppLifecycle();
   const isAppActive = useAppStateLifecycle();
   usePostStartupLifecycle({ bootPhase, isGameReady });
+  useScreenOrientationController(resolveOrientationForRoute({
+    mainTab: bootPhase === 'ready' && isGameReady ? activeTab : 'dashboard',
+    owner: managementVisible ? 'standalone' : undefined,
+  }));
 
   return (
     <GestureHandlerRootView style={styles.root}>
@@ -403,7 +417,8 @@ export default function App() {
           {bootPhase === 'recovery' && recoveryProbe ? (
             <SaveRecoveryScreen probe={recoveryProbe} onRecoveryComplete={handleRecoveryComplete} />
           ) : bootPhase === 'ready' && isGameReady ? (
-            <AppShell isAppActive={isAppActive} />
+            <AppShell isAppActive={isAppActive} activeTab={activeTab} setActiveTab={setActiveTab}
+              onManagementVisibilityChange={setManagementVisible} />
           ) : (
             <GameLoadingScreen hint={bootHint} />
           )}

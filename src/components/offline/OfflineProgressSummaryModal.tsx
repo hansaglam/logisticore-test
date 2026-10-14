@@ -50,7 +50,7 @@ export default function OfflineProgressSummaryModal({
   const cappedNote = summary.capped ? ' (24 saat sınırı uygulandı)' : '';
 
   return (
-    <Modal visible={visible} transparent animationType="fade" onRequestClose={onDismiss} statusBarTranslucent>
+    <Modal supportedOrientations={['portrait', 'landscape-left', 'landscape-right']} visible={visible} transparent animationType="fade" onRequestClose={onDismiss} statusBarTranslucent>
       <Pressable style={styles.overlay} onPress={onDismiss}>
         <Pressable
           style={[styles.sheet, { maxHeight: sheetMaxHeight, paddingBottom: sheetPaddingBottom }]}

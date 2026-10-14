@@ -74,7 +74,7 @@ export default function DeliveryIncidentModal({
   if (!delivery || !incident) return null;
 
   return (
-    <Modal
+    <Modal supportedOrientations={['portrait', 'landscape-left', 'landscape-right']}
       visible={visible}
       transparent
       animationType="fade"
